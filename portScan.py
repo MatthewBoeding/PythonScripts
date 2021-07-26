@@ -16,7 +16,7 @@ def portScan(ip):
             log.info(success)
         except Exception as e:
             if port > last+5:
-                print("Scanning...Current progress:" + ascii(port))
+                print("Scanning...Current progress:%s", ascii(port))
                 last = port
     return
 
@@ -34,7 +34,7 @@ def ipScan(ip, port):
                     log.info(success)
                 except Exception as e:
                     if octet > last+5:
-                        print("Scanning...Current progress:" + server)
+                        print("Scanning...Current progress:" + server + +":" + ascii(port))
                         last = octet
                 sock.close()
             else:
@@ -60,12 +60,20 @@ def getPortIp(argv):
     logName = "ports.log"
     for opt, arg in opts:
         if opt in ("-s", "--server"):
-            if len(ip.split('.')) > 2:
-                ip = arg
+            if len(arg.split('.')) > 2:
+                if ',' in arg:
+                    ip = arg.split(',')
+                else:
+                    ip = arg
         elif opt in ("-p", "--port"):
             if arg != '*':
                 try:
-                    port = int(arg)
+                    if ',' in arg:
+                        port = arg.split(',')
+                        for prt in port:
+                            prt = int(prt)
+                    else:
+                        port = int(arg)
                 except:
                     print("Invalid port")
         elif opt in ("-l", "--log"):
@@ -78,7 +86,18 @@ def main(argv):
     ip, port, logName = getPortIp(argv)
     logging.basicConfig(filename = logName, format='%(message)s')
     print(logging.getLoggerClass().root.handlers[0].baseFilename)
-    ipScan(ip, port)
+    if isinstance(ip, list):
+        for i in ip:
+            if isinstance(port,list):
+                for p in port:
+                    ipScan(i,p)
+            else:
+                ipScan(i, port)
+    elif isinstance(port,list):
+        for p in port:
+            ipScan(ip, p)
+    else:        
+        ipScan(ip, port)
 
 
 if __name__ == "__main__":
