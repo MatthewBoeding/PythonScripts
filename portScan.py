@@ -9,11 +9,10 @@ def portScan(ip):
     print("WARNING: You are attempting a full port range scan on ports 0-1023\n\t This may take some time....")
     for port in range(0,1023):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1.0)
+        sock.settimeout(0.3)
         try:
             sock.connect((ip, port))
-            success = "IP:" + chr(port) + " is OPEN."
-            log.info(success)
+            log.info("%s:%s is OPEN"%(ip,port))
         except Exception as e:
             if port > last+5:
                 print("Scanning...Current progress:%s", ascii(port))
@@ -26,15 +25,14 @@ def ipScan(ip, port):
         for octet in range(0,255):
             if port != '*':
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(1.0)
+                sock.settimeout(0.3)
                 server = ip + '.' + ascii(octet)
                 try:
                     sock.connect((server, port))
-                    success = "IP:" + chr(port) + " is OPEN."
-                    log.info(success)
+                    log.info("%s:%s is OPEN"%(server,port))
                 except Exception as e:
                     if octet > last+5:
-                        print("Scanning...Current progress:" + server + +":" + ascii(port))
+                        print("Scanning...Current progress: %s:%s"%(server, ascii(port)))
                         last = octet
                 sock.close()
             else:
@@ -42,11 +40,10 @@ def ipScan(ip, port):
     if len(ip.split('.')) == 4:
         if port != '*':
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(1.0)
+                sock.settimeout(0.3)
                 try:
                     sock.connect((server, port))
-                    success = "IP:" + chr(port) + " is OPEN."
-                    log.info(success)
+                    log.info("%s:%s is OPEN"%(server,port))
                 except:
                     print(ip + ':' + ascii(port) + " not open")
         else:
@@ -70,8 +67,8 @@ def getPortIp(argv):
                 try:
                     if ',' in arg:
                         port = arg.split(',')
-                        for prt in port:
-                            prt = int(prt)
+                        for p in range(0,len(port)):
+                            port[p] = int(port[p])
                     else:
                         port = int(arg)
                 except:
@@ -85,7 +82,7 @@ def getPortIp(argv):
 def main(argv):
     ip, port, logName = getPortIp(argv)
     logging.basicConfig(filename = logName, format='%(message)s')
-    print(logging.getLoggerClass().root.handlers[0].baseFilename)
+    log.addHandler(logging.StreamHandler())
     if isinstance(ip, list):
         for i in ip:
             if isinstance(port,list):
